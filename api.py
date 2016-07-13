@@ -1,4 +1,4 @@
-import os, os.path, sqlite3
+import os, os.path, sqlite3, json
 from flask import Flask, g, jsonify
 
 app = Flask(__name__)
@@ -11,19 +11,17 @@ def before_request():
     g.db = sqlite3.connect(DATABASE)
 
 
-@app.route("/tweets")
-def hello():
+@app.route("/db")
+def tweets():
     tweets = g.db.execute("SELECT text, user, time, name, retweet_status FROM tweet").fetchall()
     return jsonify(tweets)
 
+@app.route("/file")
+def tweets_from_file():
+    tweets_file = open(os.path.join(os.getenv('OPENSHIFT_DATA_DIR'), 'tweets.json'), 'r')
+    tweets = json.load(tweets_file)
+    return jsonify(tweets)
 
-# @app.route('/<path:resource>')
-# def serveStaticResource(resource):
-#     return send_from_directory('static/', resource)
-#
-# @app.route("/test")
-# def test():
-#     return "<strong>It's Alive!</strong>"
 
 if __name__ == '__main__':
     app.run(debug=True)
