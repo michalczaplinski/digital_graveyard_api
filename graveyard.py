@@ -17,7 +17,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 textfiles_dir = 'textfiles_dir'
-script_dir = os.path.join(os.path.dirname(os.path.realpath(__file__), textfiles_dir)
+script_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), textfiles_dir)
 
 def get_names_from_files():
     ''' Get the list of first names and last names from the files on disk. '''
@@ -178,7 +178,7 @@ def get_full_name_from_tweet_text(name, text, name_so_far, first_names, last_nam
         return name_so_far
 
 
-def get_latest_tweets(stream):
+def get_latest_tweet(stream):
     ''' The core function.
         Returns a 4-tuple:
         (time of the tweet, the extracted name, the full text of
@@ -226,25 +226,18 @@ def print_tweet(tweet):
     print tweet['time'], '\n', tweet['name'], '\n', tweet['text'], '\n', tweet['user'], '\n\n'
 
 
+def stream_tweets():
+    stream = connect_to_streaming_API()
+    return get_latest_tweet(stream)
+
+
+@fibonacci_backoff
 def main():
     database = os.path.join(os.getenv('OPENSHIFT_DATA_DIR'), 'tweets.db')
-    stream = connect_to_streaming_API()
-    tweets = get_latest_tweets(stream)
-    for tweet in tweets:
+    for tweet in stream_tweets():
         save_to_db(tweet, database)
-        # print_tweet(tweet)
-
-
-def reconnection_wrapper():
-    while True:
-        try:
-            x = 1/0
-            main()
-        except StandardError as e:
-            print 'There was an error, restarting in 30 seconds...'
-            logger.error(e)
-            time.sleep(30)
+        print_tweet(tweet)
 
 
 if __name__ == '__main__':
-    reconnection_wrapper()
+    main()
