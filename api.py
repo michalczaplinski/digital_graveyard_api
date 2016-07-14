@@ -1,7 +1,9 @@
 import os, os.path, sqlite3, json
 from flask import Flask, g, jsonify
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_pyfile('flaskapp.cfg')
 DATABASE = os.path.join(os.getenv('OPENSHIFT_DATA_DIR'), 'tweets.db')
 INCLUDE_RETWEETS = False
